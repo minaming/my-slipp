@@ -1,5 +1,7 @@
 package net.slipp.web;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,6 +24,37 @@ public class UserController {
 	// 땡겨다 쓰기
 	@Autowired
 	private UserRepository userRepository;
+	
+	@GetMapping("/loginForm")
+	public String loginForm() {
+		// templates> user> login.html 호출
+		return "/user/login";
+	}
+	
+	@PostMapping("/login")
+	public String login(String userId, String password, HttpSession session) {
+		// 1. user가 입력한 정보를 토대로 DB에 존재하는지를 찾는다.
+		// findByUserId를 UserRepository interface 내에 작성한다.
+		User user = userRepository.findByUserId(userId);
+		// userId을 토대로 DB 조회 시 null이면 loginform으로 redirect
+		if(user == null) {
+			System.out.println("Login Failed");
+			return "redirect:/users/loginForm";
+		}
+		
+		// 위 if문에 걸리지 않았을 때(!null) password가 같은지 여부 확인
+		// password가 같지 않을 때 실행
+		if(!password.equals(user.getPassword())) {
+			System.out.println("Login Failed");
+			return "redirect:/users/loginForm";
+		}
+		
+		System.out.println("Login Successfully");
+		// 로그인이 되었음을 어딘가에 남겨놔야함 (세션)
+		session.setAttribute("user", user);
+		return "redirect:/";
+		
+	}
 	
 	@GetMapping("/form")
 	public String form() {
