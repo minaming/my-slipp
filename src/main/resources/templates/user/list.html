@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+{{> /include/header }}
+</head>
+<body>
+	
+	{{> /include/navigation }}
+
+	<div class="container" id="main">
+		<div class="col-md-10 col-md-offset-1">
+			<div class="panel panel-default">
+				<table class="table table-hover">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>사용자 아이디</th>
+							<th>이름</th>
+							<th>이메일</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+					<!--여기서 users로 쓰인 이유는, Controller 내에서, model에 값을 담을 때,
+					useres에 담아 view로 전달하기 때문임. -->
+					{{#users}} 
+						<tr>
+							<th scope="row">{{id}}</th>
+							<td>{{userId}}</td>
+							<td>{{userName}}</td>
+							<td>{{userEmail}}</td>
+							<td><a href="/users/{{id}}/form" class="btn btn-success" role="button">수정</a></td>
+						</tr>
+					{{/users}}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<!-- script references -->
+	<script src="../js/jquery-2.2.0.min.js"></script>
+	<script src="../js/bootstrap.min.js"></script>
+	<script src="../js/scripts.js"></script>
+</body>
+</html>
