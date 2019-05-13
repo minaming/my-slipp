@@ -1,0 +1,2 @@
+INSERT INTO USER (ID, USER_ID, PASSWORD, USER_NAME, USER_EMAIL) VALUES ('1', 'javajigi', 'test', 'Minaming', 'minaming@gmail.com');
+INSERT INTO USER (ID, USER_ID, PASSWORD, USER_NAME, USER_EMAIL) VALUES ('2', 'testUser', 'test', 'pwistest', 'hello@gmail.com');

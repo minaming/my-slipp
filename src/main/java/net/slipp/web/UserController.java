@@ -41,7 +41,7 @@ public class UserController {
 			System.out.println("Login Failed");
 			return "redirect:/users/loginForm";
 		}
-		
+
 		// 위 if문에 걸리지 않았을 때(!null) password가 같은지 여부 확인
 		// password가 같지 않을 때 실행
 		if(!password.equals(user.getPassword())) {
@@ -54,6 +54,13 @@ public class UserController {
 		session.setAttribute("user", user);
 		return "redirect:/";
 		
+	}
+	
+	@GetMapping("/logout")
+	public String logout(HttpSession session) {
+		System.out.println("LOG OUT Successfully");
+		session.removeAttribute("user");		
+		return "redirect:/";
 	}
 	
 	@GetMapping("/form")
