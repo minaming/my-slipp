@@ -9,13 +9,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import net.slipp.domain.User;
 import net.slipp.domain.UserRepository;
 
 @Controller
-@RequestMapping("/users")
 public class UserController {
 	
 	//여러명의 유저 정보를 받을 수 있는 List 객체를 만든다.
@@ -25,13 +23,13 @@ public class UserController {
 	@Autowired
 	private UserRepository userRepository;
 	
-	@GetMapping("/loginForm")
+	@GetMapping("/users/loginForm")
 	public String loginForm() {
 		// templates> user> login.html 호출
 		return "/user/login";
 	}
 	
-	@PostMapping("/login")
+	@PostMapping("/users/login")
 	public String login(String userId, String password, HttpSession session) {
 		// 1. user가 입력한 정보를 토대로 DB에 존재하는지를 찾는다.
 		// findByUserId를 UserRepository interface 내에 작성한다.
@@ -51,19 +49,19 @@ public class UserController {
 		
 		System.out.println("Login Successfully");
 		// 로그인이 되었음을 어딘가에 남겨놔야함 (세션)
-		session.setAttribute("user", user);
+		session.setAttribute("sessionedUser", user);
 		return "redirect:/";
 		
 	}
 	
-	@GetMapping("/logout")
+	@GetMapping("/users/logout")
 	public String logout(HttpSession session) {
 		System.out.println("LOG OUT Successfully");
-		session.removeAttribute("user");		
+		session.removeAttribute("sessionedUser");		
 		return "redirect:/";
 	}
 	
-	@GetMapping("/form")
+	@GetMapping("/users/form")
 	public String form() {
 		return "/user/form";
 	}
@@ -71,7 +69,7 @@ public class UserController {
 	// conventional 하게 /users 라고 한다.
 //	@PostMapping("/user/create")
 	// 위에 requestmapping("/users")를 기본으로하고, 거기 뒤에 들어가는거를 postmapping에 써준다
-	@PostMapping("")
+	@PostMapping("/users")
 	public String create(User user) {
 		System.out.println("user : " + user);
 		//유저가 가입하면 users 리스트에 추가한다.
@@ -84,7 +82,7 @@ public class UserController {
 	
 	// conventional 하게 user/list가 아닌, users라고 한다.
 //	@GetMapping("/user/list")
-	@GetMapping("")
+	@GetMapping("/users")
 	public String list(Model model) {
 		// model에다가 repository의 모든 정보를 담는다.
 		// model.addAttribute("이름", "넘길 값")
@@ -95,8 +93,18 @@ public class UserController {
 	}
 	
 	// id
-	@GetMapping("/{id}/form")
-	public String updateForm(@PathVariable Long id, Model model) {
+	@GetMapping("/users/{id}/form")
+	public String updateForm(@PathVariable Long id, Model model, HttpSession session) {
+		Object tempUser = session.getAttribute("sessionedUser");
+		if(tempUser == null) {
+			return "redirect:/users/loginForm";
+		}
+		
+		User sessionedUser = (User)tempUser;
+		if(!id.equals(sessionedUser.getId())){
+			throw new IllegalStateException("Access not allowed.");
+		}
+		
 		// model 객체를 이용해, 해당 id에 속하는 데이터를 user에 담고
 		// 해당 데이터를 view로 전달한다 (view 파일을 리턴한다)
 		model.addAttribute("user", userRepository.findById(id).get());
@@ -105,11 +113,22 @@ public class UserController {
 	
 	// UPDATE 영역
 	// @PostMapping("/{id}") updateForm에서 input type으로 put 지정해주면 putmapping으로 쓸 수 있다.
-	@PutMapping("/{id}")
-	public String update(@PathVariable Long id, User newUser) { //param으로 받는 user는 새롭게 입력한 정보의 user
+	@PutMapping("/users/{id}")
+	public String update(@PathVariable Long id, User updatedUser, HttpSession session) { //param으로 받는 user는 새롭게 입력한 정보의 user
+		
+		Object tempUser = session.getAttribute("sessionedUser");
+		if(tempUser == null) {
+			return "redirect:/users/loginForm";
+		}
+		
+		User sessionedUser = (User)tempUser;
+		if(!id.equals(sessionedUser.getId())){
+			throw new IllegalStateException("ACCESS NOT ALLOWED");
+		}
+		
 		//이 user는 원래 DB에 저장되어 있는 정보의 user
 		User user = userRepository.findById(id).get();
-		user.updateInfo(newUser);
+		user.updateInfo(updatedUser);
 		userRepository.save(user);
 		return "redirect:/users";
 	}

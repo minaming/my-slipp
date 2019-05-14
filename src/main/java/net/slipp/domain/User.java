@@ -15,7 +15,7 @@ public class User {
 	@GeneratedValue
 	private Long id;
 	
-	//@Column(nullable=true, length=20) // nullable = true가 디폴트
+	@Column(nullable=true, length=20, unique=true) // nullable = true가 디폴트
 	private String userId;
 
 	private String password;
