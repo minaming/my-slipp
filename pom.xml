@@ -8,6 +8,7 @@
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>2.1.4.RELEASE</version>
 		<relativePath /> <!-- lookup parent from repository -->
+		<packaging>war</packaging>
 	</parent>
 	<groupId>net.slipp</groupId>
 	<artifactId>my-slipp</artifactId>
@@ -85,6 +86,14 @@
 			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
 			<scope>runtime</scope>
+		</dependency>
+		
+		<!-- war 배포를 위해 별도의 tomcat 필요. 이를 위해서는 some code가 필요함. 그래야 외부에 톰캣 서버가 뜨면서 이 프로젝트를 초기화 하는것이 가능함.
+		외장 톰캣을 이용하면 Application.java를 쓰는 것이 아니라 초기화 해줄 뭔가가 필요함. 그래서 WebInitializer.java 클래스 생성 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>provided</scope>
 		</dependency>
 
 	</dependencies>

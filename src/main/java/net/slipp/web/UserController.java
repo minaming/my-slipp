@@ -9,11 +9,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import net.slipp.domain.User;
 import net.slipp.domain.UserRepository;
 
 @Controller
+@RequestMapping("/users")
 public class UserController {
 	
 	//여러명의 유저 정보를 받을 수 있는 List 객체를 만든다.
@@ -23,13 +25,13 @@ public class UserController {
 	@Autowired
 	private UserRepository userRepository;
 	
-	@GetMapping("/users/loginForm")
+	@GetMapping("/loginForm")
 	public String loginForm() {
 		// templates> user> login.html 호출
 		return "/user/login";
 	}
 	
-	@PostMapping("/users/login")
+	@PostMapping("/login")
 	public String login(String userId, String password, HttpSession session) {
 		// 1. user가 입력한 정보를 토대로 DB에 존재하는지를 찾는다.
 		// findByUserId를 UserRepository interface 내에 작성한다.
@@ -42,26 +44,28 @@ public class UserController {
 
 		// 위 if문에 걸리지 않았을 때(!null) password가 같은지 여부 확인
 		// password가 같지 않을 때 실행
-		if(!password.equals(user.getPassword())) {
+		// 이렇게 user에서 자꾸 값을 꺼내는 것보다는 (get으로) 
+		// matchPassword와같은 메소드를 User 안에 만들어서 쓰는것이 좋다.
+		if(!user.matchPassword(password)) {
 			System.out.println("Login Failed");
 			return "redirect:/users/loginForm";
 		}
 		
 		System.out.println("Login Successfully");
 		// 로그인이 되었음을 어딘가에 남겨놔야함 (세션)
-		session.setAttribute("sessionedUser", user);
+		session.setAttribute(HttpSessionUtils.USER_SESSION_KEY, user);
 		return "redirect:/";
 		
 	}
 	
-	@GetMapping("/users/logout")
+	@GetMapping("/logout")
 	public String logout(HttpSession session) {
 		System.out.println("LOG OUT Successfully");
-		session.removeAttribute("sessionedUser");		
+		session.removeAttribute(HttpSessionUtils.USER_SESSION_KEY);		
 		return "redirect:/";
 	}
 	
-	@GetMapping("/users/form")
+	@GetMapping("/form")
 	public String form() {
 		return "/user/form";
 	}
@@ -69,7 +73,7 @@ public class UserController {
 	// conventional 하게 /users 라고 한다.
 //	@PostMapping("/user/create")
 	// 위에 requestmapping("/users")를 기본으로하고, 거기 뒤에 들어가는거를 postmapping에 써준다
-	@PostMapping("/users")
+	@PostMapping("")
 	public String create(User user) {
 		System.out.println("user : " + user);
 		//유저가 가입하면 users 리스트에 추가한다.
@@ -82,7 +86,7 @@ public class UserController {
 	
 	// conventional 하게 user/list가 아닌, users라고 한다.
 //	@GetMapping("/user/list")
-	@GetMapping("/users")
+	@GetMapping("")
 	public String list(Model model) {
 		// model에다가 repository의 모든 정보를 담는다.
 		// model.addAttribute("이름", "넘길 값")
@@ -93,15 +97,19 @@ public class UserController {
 	}
 	
 	// id
-	@GetMapping("/users/{id}/form")
+	@GetMapping("/{id}/form")
 	public String updateForm(@PathVariable Long id, Model model, HttpSession session) {
 		Object tempUser = session.getAttribute("sessionedUser");
-		if(tempUser == null) {
+		// 로그인 되었는가 체크하는 부분
+		// if(tempUser == null) {
+		if(HttpSessionUtils.isLoginUser(session)) {
 			return "redirect:/users/loginForm";
 		}
 		
-		User sessionedUser = (User)tempUser;
-		if(!id.equals(sessionedUser.getId())){
+		// User sessionedUser = (User)tempUser;
+		User sessionedUser = HttpSessionUtils.getUserFromSession(session);
+		if(!sessionedUser.matchId(id)) {
+		// if(!id.equals(sessionedUser.getId())){
 			throw new IllegalStateException("Access not allowed.");
 		}
 		
@@ -113,16 +121,20 @@ public class UserController {
 	
 	// UPDATE 영역
 	// @PostMapping("/{id}") updateForm에서 input type으로 put 지정해주면 putmapping으로 쓸 수 있다.
-	@PutMapping("/users/{id}")
+	@PutMapping("/{id}")
 	public String update(@PathVariable Long id, User updatedUser, HttpSession session) { //param으로 받는 user는 새롭게 입력한 정보의 user
 		
-		Object tempUser = session.getAttribute("sessionedUser");
-		if(tempUser == null) {
+		// Object tempUser = session.getAttribute("sessionedUser");
+		// if(tempUser == null) {
+		
+		if(HttpSessionUtils.isLoginUser(session)){
 			return "redirect:/users/loginForm";
 		}
 		
-		User sessionedUser = (User)tempUser;
-		if(!id.equals(sessionedUser.getId())){
+		// User sessionedUser = (User)tempUser;
+		User sessionedUser = HttpSessionUtils.getUserFromSession(session);
+		if(!sessionedUser.matchId(id)) {
+		// if(!id.equals(sessionedUser.getId())){
 			throw new IllegalStateException("ACCESS NOT ALLOWED");
 		}
 		

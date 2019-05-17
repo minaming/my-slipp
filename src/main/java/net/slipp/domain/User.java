@@ -63,4 +63,20 @@ public class User {
 		this.userName = newUser.userName;
 		this.userEmail = newUser.userEmail;
 	}
+	
+	// 유저의 패스워드가 새것인지 아닌지 비교 메소드
+	public boolean matchPassword(String newPassword) {
+		if(newPassword == null) {
+			return false;
+		}
+		return newPassword.equals(password);
+	}
+	
+	// 유저의 아이디 매치 메소드
+	public boolean matchId(Long newId) {
+		if(newId == null) {
+			return false;
+		}
+		return newId.equals(id);
+	}
 }
